@@ -19,10 +19,10 @@ namespace SimE {
 	}
 
 
-	void SpriteBatch::init(GLuint vao, GLuint vbo, int depth) {
+	void SpriteBatch::init(GLuint vao, GLuint vbo, int layerNum) {
 		m_vao = vao;
 		m_vbo = vbo;
-		m_layerNum = depth;
+		m_layerNum = layerNum;
 	}
 
 	void SpriteBatch::begin() {

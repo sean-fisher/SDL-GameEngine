@@ -48,7 +48,7 @@ namespace SimE {
 		SpriteBatch();
 		~SpriteBatch();
 
-		void init(GLuint vao, GLuint vbo, int numLayers);
+		void init(GLuint vao, GLuint vbo, int layerNum);
 		void begin();//GlyphSortType sortType = GlyphSortType::TEXTURE);
 		void end();
 		void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const ColorRGBA8& color);

@@ -33,8 +33,6 @@ Game::Game()
 	//SimE:Time::delta = 0;
     m_currGameState = GameState::PLAY;
 
-    m_cam.init(m_screenWidth, m_screenHeight);
-    
 }
 
 Game::~Game()
@@ -99,6 +97,9 @@ void Game::initSystems() {
 	// set the number of sprite layers
 	SpriteLayers::getInstance()->init(3);
 
+	m_cam.init(m_screenWidth, m_screenHeight);
+	m_uiCam.init(m_screenWidth, m_screenHeight);
+	m_uiCam.setPosition(glm::vec2(m_screenWidth / 2, m_screenHeight / 2));
 }
 
 
@@ -196,6 +197,7 @@ void Game::gameLoop() {
 		m_inputManager.update();
 		processInput();
 		m_cam.update();
+		m_uiCam.update();
 
 		//int i = 0;
 		//float deltaTime = std::min(totalDeltaTime, max_delta_time);
@@ -216,7 +218,7 @@ void Game::gameLoop() {
 
 		// draw everything
 		SpriteLayers::getInstance()->beginDrawing();
-		SpriteLayers::getInstance()->drawAll(&m_cam, &_window);
+		SpriteLayers::getInstance()->drawAll(&m_cam, &m_uiCam, &_window);
 		SpriteLayers::getInstance()->endDrawing(&_window);
 
 

@@ -34,7 +34,7 @@ namespace SimE {
 		glUniform1f(timeLoc, Timer::getTime());
 	}
 
-	void SpriteLayers::drawAll(Camera2D* cam, Window* window) {
+	void SpriteLayers::drawAll(Camera2D* cam, Camera2D* uiCam, Window* window) {
 		//SDL_PollEvent(&_event);
 		// Set the ortho camera matrix
 		GLuint projLoc = _colorProgram.getUniformLocation("orthoProj");
@@ -53,7 +53,7 @@ namespace SimE {
 			batch->endDrawing();
 		}
 
-		drawUI();
+		drawUI(uiCam);
 		/*
 		SDL_SetRenderDrawColor(window->getRenderer(), 255, 255, 255, 0);
 		for (int i = 0; i < 50; i++) {
@@ -77,7 +77,8 @@ namespace SimE {
 		createVertexArray();
 		m_spriteFont = new SimE::SpriteFont("Assets/Fonts/ff6_font.ttf", 32);
 		_colorProgram.initShaders();
-
+		m_uiSpriteBatch = new SpriteBatch();
+		m_uiSpriteBatch->init(_vao, _vbo, 10);
 
 		_layers = new std::vector<SpriteBatch*>(numLayers);
 
@@ -180,15 +181,19 @@ namespace SimE {
 		glBindVertexArray(0);
 	}
 
-	void SpriteLayers::drawUI() {
-		m_uiSpriteBatch.begin();
+	void SpriteLayers::drawUI(Camera2D* uiCam) {
+
+		GLuint projLoc = _colorProgram.getUniformLocation("orthoProj");
+		glm::mat4 camMatrix = uiCam->getCameraMatrix();
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, &camMatrix[0][0]);
+		m_uiSpriteBatch->begin();
 
 		char message[256];
 		sprintf_s(message, "FPS: %d", FPSLimiter::getFPS());
 
-		m_spriteFont->draw(m_uiSpriteBatch, message, glm::vec2(0, 0), glm::vec2(4), 0, ColorRGBA8(255, 255, 255, 255));
+		m_spriteFont->draw(*m_uiSpriteBatch, message, glm::vec2(0, 0), glm::vec2(1), 0, ColorRGBA8(255, 255, 255, 255));
 
-		m_uiSpriteBatch.end();
-		m_uiSpriteBatch.renderBatch();
+		m_uiSpriteBatch->end();
+		m_uiSpriteBatch->renderBatch();
 	}
 }

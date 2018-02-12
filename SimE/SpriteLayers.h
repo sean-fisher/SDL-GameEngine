@@ -29,7 +29,7 @@ namespace SimE {
 		void addToLayer(int layer, Sprite* sprite);
 		bool removeFromLayer(int layer, Sprite* sprite);
 		void beginDrawing();
-		void drawAll(Camera2D* cam, Window* window);
+		void drawAll(Camera2D* cam, Camera2D* uiCam, Window* window);
 		void endDrawing(Window* window);
 		void init(int numLayers);
 		void addMapToBatch(TileMap* map, Tileset* set);
@@ -37,7 +37,7 @@ namespace SimE {
 		void addTileset(int hash, Tileset* tileset);
 	private:
 		void createVertexArray();
-		void drawUI();
+		void drawUI(Camera2D* uiCam);
 
 		std::vector<SpriteBatch*>* _layers;
 
@@ -54,7 +54,7 @@ namespace SimE {
 		// Vertex Array Object
 		GLuint _vao;
 
-		SpriteBatch m_uiSpriteBatch;
+		SpriteBatch* m_uiSpriteBatch;
 		SpriteFont* m_spriteFont;
 	};
 }

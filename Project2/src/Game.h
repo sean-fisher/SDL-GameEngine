@@ -49,6 +49,7 @@ private:
 	SimE::FPSLimiter m_fpsLimiter;
 
 	SimE::Camera2D m_cam;
+	SimE::Camera2D m_uiCam;
 	SimE::SpriteBatch m_spriteBatch;
 	SimE::InputManager m_inputManager;
 
