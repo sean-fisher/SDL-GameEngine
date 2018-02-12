@@ -18,8 +18,10 @@ namespace SimE {
 
 	};
 
-	struct Glyph {
+	class Glyph {
 	public:
+		Glyph(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const ColorRGBA8& color);
+		
 		GLuint texture;
 		float depth;
 
@@ -49,7 +51,8 @@ namespace SimE {
 		void init(GLuint vao, GLuint vbo, int numLayers);
 		void begin();//GlyphSortType sortType = GlyphSortType::TEXTURE);
 		void end();
-		void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const Color& color);
+		void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const ColorRGBA8& color);
+		void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const ColorRGBA8& color, glm::vec2& scale);
 		void drawAll(Camera2D* cam);
 		void addSprite(Sprite* sprite);
 		void removeSprite(Sprite* sprite);
@@ -59,7 +62,7 @@ namespace SimE {
 		void endDrawing();
 
 		// Getters
-		GLSLProgram* getGLSLProgram() { return &_colorProgram; }
+		GLSLProgram* getGLSLProgram() { return &m_colorProgram; }
 
 		GLuint _currentShaderID;
 
@@ -73,19 +76,20 @@ namespace SimE {
 		static bool compareBackToFront(Glyph* a, Glyph* b);
 		static bool compareTexture(Glyph* a, Glyph* b);
 
-		GlyphSortType _sortType;
+		GlyphSortType m_sortType;
 
 
-		std::vector<Glyph*> _glyphs;
-		std::vector<Sprite*> _sprites;
-		std::vector<RenderBatch> _renderBatches;
+		std::vector<Glyph> m_glyphs;
+		std::vector<Glyph*> m_glyphPointers;
+		std::vector<Sprite*> m_sprites;
+		std::vector<RenderBatch> m_renderBatches;
 
-		GLSLProgram _colorProgram;
+		GLSLProgram m_colorProgram;
 
-		GLuint _vao;
-		GLuint _vbo;
+		GLuint m_vao;
+		GLuint m_vbo;
 
-		int _layerNum; // low numbers are drawn first
+		int m_layerNum; // low numbers are drawn first
 	};
 
 }

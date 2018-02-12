@@ -8,9 +8,9 @@ namespace SimE {
 		float y;
 	};
 
-	struct Color {
-		Color::Color() {};
-		Color::Color(GLubyte r, GLubyte g, GLubyte b, GLubyte a) 
+	struct ColorRGBA8 {
+		ColorRGBA8::ColorRGBA8() {};
+		ColorRGBA8::ColorRGBA8(GLubyte r, GLubyte g, GLubyte b, GLubyte a) 
 			: r(r), g(g), b(b), a(a) {};
 		GLubyte r;
 		GLubyte g;
@@ -39,7 +39,7 @@ namespace SimE {
 
 	struct Vertex {
 		Position position;
-		Color color;
+		ColorRGBA8 color;
 		UV uv;
 
 		void setColor(GLubyte r, GLubyte g, GLubyte b, GLubyte a) {

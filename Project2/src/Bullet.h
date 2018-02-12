@@ -10,12 +10,12 @@ public:
 
 	bool beat() override;
 
-	SimE::Sprite* _sprite;
+	SimE::Sprite* m_sprite;
 
 private:
-	float _lifetime;
-	float _speed;
-	glm::vec2 _direction;
-	glm::vec2 _position;
+	float m_lifetime;
+	float m_speed;
+	glm::vec2 m_direction;
+	glm::vec2 m_position;
 };
 

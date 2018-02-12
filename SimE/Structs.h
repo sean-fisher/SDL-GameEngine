@@ -2,6 +2,7 @@
 
 #include <GLM/glm.hpp>
 #include <vector>
+#include "Alive.h"
 
 namespace SimE {
 
@@ -10,24 +11,32 @@ namespace SimE {
 	public:
 		virtual bool testCollision(Collider* other) = 0;
 
-		float getWidth() { return _width; }
-		float getHeight() { return _height; }
-		glm::vec2 getPos() { return _position; }
-		glm::vec2 getLastPos() { return _lastPosition; }
-		bool isStatic() { return _isStatic; }
+		int getWidth() { return m_width; }
+		int getHeight() { return m_height; }
+		glm::vec2 getPos() { return m_position; }
+		glm::vec2 getLastPos() { return m_lastPosition; }
+		bool isStatic() { return m_isStatic; }
+		Alive* getAlive() { return m_alive; }
 
-		void setWidth(float width) { _width = width; }
-		void setHeight(float height) { _height = height; }
-		void setPos(glm::vec2 position) { _position = position; }
-		void setLastPos(glm::vec2 position) { _lastPosition = position; }
-		void setStatic(bool is_static) { _isStatic = is_static; }
+		void setWidth(int width) { m_width = width; }
+		void setHeight(int height) { m_height = height; }
+		void setPos(glm::vec2 position) { 
+			m_position = position; 
+			if (m_alive) {
+				m_alive->setPos(m_position);
+			}
+		}
+		void setLastPos(glm::vec2 position) { m_lastPosition = position; }
+		void setStatic(bool is_static) { m_isStatic = is_static; }
+		void setAlive(Alive* alive) { m_alive = alive; }
 
-	private:
-		bool _isStatic;
-		float _width;
-		float _height;
-		glm::vec2 _position;
-		glm::vec2 _lastPosition;
+	protected:
+		bool m_isStatic;
+		int m_width;
+		int m_height;
+		glm::vec2 m_position;
+		glm::vec2 m_lastPosition;
+		Alive* m_alive;
 	};
 
 	class SquareCollider : public Collider {

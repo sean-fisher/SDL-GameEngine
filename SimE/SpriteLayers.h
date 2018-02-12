@@ -5,6 +5,8 @@
 #include "Camera2D.h"
 #include "TileMap.h"
 #include "Tileset.h"
+#include "Window.h"
+#include "SpriteFont.h"
 
 namespace SimE {
 	enum SpriteLayer {
@@ -27,14 +29,15 @@ namespace SimE {
 		void addToLayer(int layer, Sprite* sprite);
 		bool removeFromLayer(int layer, Sprite* sprite);
 		void beginDrawing();
-		void drawAll(Camera2D* cam);
-		void endDrawing();
+		void drawAll(Camera2D* cam, Window* window);
+		void endDrawing(Window* window);
 		void init(int numLayers);
 		void addMapToBatch(TileMap* map, Tileset* set);
 		bool hasLoadedTileset(int hash);
 		void addTileset(int hash, Tileset* tileset);
 	private:
 		void createVertexArray();
+		void drawUI();
 
 		std::vector<SpriteBatch*>* _layers;
 
@@ -43,10 +46,15 @@ namespace SimE {
 
 		GLSLProgram _colorProgram;
 
+		SDL_Event _event;
+
 		// Vertex Buffer Object
 		GLuint _vbo;
 
 		// Vertex Array Object
 		GLuint _vao;
+
+		SpriteBatch m_uiSpriteBatch;
+		SpriteFont* m_spriteFont;
 	};
 }

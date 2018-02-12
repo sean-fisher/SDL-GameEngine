@@ -12,8 +12,9 @@
 #include <SimE/SpriteBatch.h>
 #include <SimE/InputManager.h>
 #include "Bullet.h"
-#include <SimE/Time.h>
+#include <SimE/Timer.h>
 #include <SimE/Alive.h>
+#include <SimE/SpriteFont.h>
 
 enum class GameState { PLAY, EXIT };
 
@@ -35,24 +36,26 @@ private:
 	void gameLoop();
 	void drawGame();
 	
-	float _fps;
+	float m_fps;
 	
 	SimE::Window _window;
-	int _screenWidth;
-	int _screenHeight;
+	int m_screenWidth;
+	int m_screenHeight;
 	
-	GameState _currGameState;
+	GameState m_currGameState;
 
 
-	SimE::GLSLProgram _colorProgram;
-	SimE::FPSLimiter _fpsLimiter;
+	SimE::GLSLProgram m_colorProgram;
+	SimE::FPSLimiter m_fpsLimiter;
 
-	SimE::Camera2D _cam;
-	SimE::SpriteBatch _spriteBatch;
-	SimE::InputManager _inputManager;
+	SimE::Camera2D m_cam;
+	SimE::SpriteBatch m_spriteBatch;
+	SimE::InputManager m_inputManager;
 
-	std::vector<Bullet> _bullets;
 
-	std::vector<Alive*> _aliveObjects;
+	std::vector<Bullet> m_bullets;
+
+	std::vector<Alive*> m_aliveObjects;
+
 };
 

@@ -5,7 +5,12 @@
 #include <SDL/SDL.h>
 #include <iostream>
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
+// if you are moving vertically and hit the corner of a square collider, 
+// you will be pushed to the right. If this is not defined, the horizontal 
+// equivalent will be true. Both cannot be possible right now because the 
+// player gets stuck on a corner.
+#define SLIDE_VERTICAL
 
 namespace SimE {
 	SquareCollider::SquareCollider() {
@@ -17,23 +22,6 @@ namespace SimE {
 		setHeight(height);
 		setStatic(isStatic);
 
-#ifdef DEBUG_MODE
-		if (isStatic) {
-/*			SpriteLayers::getInstance()->addToLayer(1, new Sprite(position, glm::vec2(.5f, .5f), "", 0, Color(255, 255, 255, 255)));*/
-/*			SpriteLayers::getInstance()->addToLayer(1, 
-				new Sprite(&glm::vec2(position->x + width / 2, 
-									  position->y + height / 2 + 200), 
-									  glm::vec2(.5f, .5f), 
-									  "", 
-									  0.0, 
-									  Color(255, 255, 255, 255), 
-									  glm::vec2(.5f, .5f)));
-			SpriteLayers::getInstance()->addToLayer(1, 
-				new Sprite(&glm::vec2(position->x - width / 2, position->y + height / 2), glm::vec2(.5f, .5f), "", 0, Color(255, 255, 255, 255), glm::vec2(.5f, .5f)));
-			SpriteLayers::getInstance()->addToLayer(1, new Sprite(&glm::vec2(position->x - width / 2, position->y - height / 2), glm::vec2(.5f, .5f), "", 0, Color(255, 255, 255, 255), glm::vec2(.5f, .5f)));
-			SpriteLayers::getInstance()->addToLayer(1, new Sprite(&glm::vec2(position->x + width / 2, position->y - height / 2), glm::vec2(.5f, .5f), "", 0, Color(255, 255, 255, 255), glm::vec2(.5f, .5f)));*/
-		}
-#endif
 	}
 
 	bool SquareCollider::testCollision(Collider* other) {
@@ -41,8 +29,8 @@ namespace SimE {
 		float dx = abs(other->getPos().x - this->getPos().x);
 		float dy = abs(other->getPos().y - this->getPos().y);
 
-		float widthSum = this->getWidth() / 2 + other->getWidth() / 2;
-		float heightSum = this->getHeight() / 2 + other->getHeight() / 2;
+		int widthSum = (int)(this->getWidth() / 2.0f + other->getWidth() / 2.0f);
+		int heightSum = (int)(this->getHeight() / 2.0f + other->getHeight() / 2.0f);
 
 		if (dx < widthSum && dy < heightSum) {
 			// Collision!
@@ -58,26 +46,97 @@ namespace SimE {
 				float diffY = heightSum - dy;
 				float diffX = widthSum - dx;
 
+				if (m_alive && other->getAlive()) {
+					m_alive->onCollide(other->getAlive());
+				}
+
 				if (diffX > diffY) {
-					printf("Collision!\n");
-					// move other in the X
-					if (getPos().x > other->getPos().x) {
-						// other must move left
-						//getPos()->y -= getHeight() - dy + 16;
-						setPos(getLastPos());
+					// move this in the X
+					if (m_position.x > other->getPos().x) {
+						//  ___|_
+						// |	|
+						// |	|
+						// |____|
+						//     |----this
+
+						// if close to the right side, push this right
+						int roundedEdgeSize = 2;
+						int distToEdge = (int)(-m_position.x + other->getPos().x + other->getWidth() / 2);
+						
+						int displace;
+						if (other->getPos().y < m_position.y) {
+							displace = (int)(other->getPos().y + other->getHeight() / 2.0f + m_height / 2.0f);
+						} else {
+							displace = (int)(other->getPos().y - other->getHeight() / 2.0f - m_height / 2.0f);
+						}
+						
+						if (distToEdge < roundedEdgeSize) {
+							setPos(glm::vec2(m_position.x + 1, displace));
+						} else {
+							setPos(glm::vec2(m_position.x, displace));
+						}
 					} else {
-						// other must move right
-						//getPos()->x += getWidth() - dx;
+						//  _|___
+						// |	|
+						// |	|
+						// |____|
+						//  |------this
+
+						// if close to the left side, push this left
+						int roundedEdgeSize = 2;
+						int distToEdge = (int)(m_position.x - other->getPos().x + other->getWidth() / 2);
+						int displace;
+						if (other->getPos().y < m_position.y) {
+							displace = (int)(other->getPos().y + other->getHeight() / 2.0f + m_height / 2.0f);
+						} else {
+							displace = (int)(other->getPos().y - other->getHeight() / 2.0f - m_height / 2.0f);
+						}
+						if (distToEdge < roundedEdgeSize) {
+							setPos(glm::vec2(m_position.x - 1, displace));
+						} else {
+							setPos(glm::vec2(m_position.x, displace));
+						}
 					}
 
 				} else {
-					// move other in the Y
-					if (getPos().y > other->getPos().y) {
-						// other must move down
-						//getPos()->y -= heightSum - dy;
+					// move this in the Y
+					if (m_position.y > other->getPos().y) {
+						//		 ____
+						// this-|	 |-this
+						//		|	 |
+						//		|____|
+
+#ifndef SLIDE_VERTICAL
+						// if close to the top side, push this up
+						int roundedEdgeSize = 2;
+						int distToEdge = -m_position.y + other->getPos().y + other->getHeight() / 2;
+						if (distToEdge < roundedEdgeSize) {
+							setPos(glm::vec2(m_lastPosition.x, m_position.y + 1));
+						} else {
+							setPos(glm::vec2(m_lastPosition.x, m_position.y));
+						}
+#else
+						setPos(glm::vec2(m_lastPosition.x, m_position.y));
+#endif
 					} else {
-						// other must move up
-						//getPos()->y += heightSum - dy;
+						//      ____
+						//     |	|
+						//     |	|
+						//this-|____|-this
+						//
+
+#ifndef SLIDE_VERTICAL
+						// if close to the bottom side, push this down
+						int roundedEdgeSize = 2;
+						int distToEdge = m_position.y - other->getPos().y + other->getHeight() / 2;
+						if (distToEdge < roundedEdgeSize) {
+							setPos(glm::vec2(m_lastPosition.x, m_position.y - 1));
+						} else {
+							setPos(glm::vec2(m_lastPosition.x, m_position.y));
+						}
+#else
+						setPos(glm::vec2(m_lastPosition.x, m_position.y));
+#endif
 					}
 				}
 			} else {

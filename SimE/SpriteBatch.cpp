@@ -20,52 +20,58 @@ namespace SimE {
 
 
 	void SpriteBatch::init(GLuint vao, GLuint vbo, int depth) {
-		_vao = vao;
-		_vbo = vbo;
-		_layerNum = depth;
+		m_vao = vao;
+		m_vbo = vbo;
+		m_layerNum = depth;
 	}
 
 	void SpriteBatch::begin() {
-		_sortType = GlyphSortType::TEXTURE;
-		_renderBatches.clear();
-		for (size_t i = 0; i < _glyphs.size(); i++) {
-			delete _glyphs[i];
-		}
-		_glyphs.clear();
+		m_sortType = GlyphSortType::TEXTURE;
+		m_renderBatches.clear();
+
+		m_glyphs.clear();
 	}
 
 	void SpriteBatch::end() {
+		m_glyphPointers.resize(m_glyphs.size());
+		for (size_t i = 0; i < m_glyphs.size(); i++) {
+			m_glyphPointers[i] = &m_glyphs[i];
+		}
 
 		// make sure the glyphs are sorted for efficiency
 		sortGlyphs();
 
 		createRenderBatches();
 	}
+	void SpriteBatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const ColorRGBA8& color) {
 
-	void SpriteBatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const Color& color) {
-		Glyph* newGlyph = new Glyph;
+		m_glyphs.emplace_back(destRect, uvRect, texture, depth, color);
+	}
+
+	void SpriteBatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const ColorRGBA8& color, glm::vec2& scale) {
+/*		Glyph* newGlyph = new Glyph;
 
 		newGlyph->texture = texture;
 		newGlyph->depth = depth;
 
 		newGlyph->topLeft.color = color;
-		newGlyph->topLeft.setPosition(destRect.x, destRect.y + destRect.w);
+		newGlyph->topLeft.setPosition(destRect.x * scale.x, (destRect.y + destRect.w) * scale.y);
 		newGlyph->topLeft.setUV(uvRect.x, uvRect.y + uvRect.w);
 
 		newGlyph->bottomLeft.color = color;
-		newGlyph->bottomLeft.setPosition(destRect.x, destRect.y);
+		newGlyph->bottomLeft.setPosition(destRect.x * scale.x, destRect.y * scale.y);
 		newGlyph->bottomLeft.setUV(uvRect.x, uvRect.y);
 
 
 		newGlyph->bottomRight.color = color;
-		newGlyph->bottomRight.setPosition(destRect.x + destRect.z, destRect.y);
+		newGlyph->bottomRight.setPosition((destRect.x + destRect.z) * scale.x, destRect.y * scale.y);
 		newGlyph->bottomRight.setUV(uvRect.x + uvRect.z, uvRect.y);
 
 		newGlyph->topRight.color = color;
-		newGlyph->topRight.setPosition(destRect.x + destRect.z, destRect.y + destRect.w);
+		newGlyph->topRight.setPosition((destRect.x + destRect.z) * scale.x, (destRect.y + destRect.w) * scale.y);
 		newGlyph->topRight.setUV(uvRect.x + uvRect.z, uvRect.y + uvRect.w);
 
-		_glyphs.push_back(newGlyph);
+		_glyphs.push_back(newGlyph);*/
 	}
 
 	void SpriteBatch::drawAll(Camera2D* cam) {
@@ -78,40 +84,43 @@ namespace SimE {
 		glm::vec4 pos(0, 0, 100, 100);
 		glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
 		
-		SimE::Color color;
+		SimE::ColorRGBA8 color;
 		color.r = 255;
 		color.g = 255;
 		color.b = 255;
 		color.a = 255;
-		if (_sprites.size() > 0) {
+		if (m_sprites.size() > 0) {
 
-			_currentShaderID = _sprites[0]->_shaderID;
-			pos.x = _sprites[0]->_pos->x;
-			pos.y = _sprites[0]->_pos->y;
-			pos.z = _sprites[0]->_uv.x;
-			pos.w = _sprites[0]->_uv.y;
-			uv.x = _sprites[0]->_uv.x;
-			uv.y = _sprites[0]->_uv.y;
+			_currentShaderID = m_sprites[0]->_shaderID;
+			pos.x = m_sprites[0]->_pos->x - m_sprites[0]->_texture.width / 2;
+			pos.y = m_sprites[0]->_pos->y - m_sprites[0]->_texture.height / 2;
+			pos.z = m_sprites[0]->_uv.x;
+			pos.w = m_sprites[0]->_uv.y;
+			uv.x = m_sprites[0]->_uv.x;
+			uv.y = m_sprites[0]->_uv.y;
 
 			glm::vec2 aliveDims(/*radius*/ 4);
 
-			if (cam->canBeSeen(*_sprites[0]->_pos, aliveDims)) {
-				draw(pos, uv, (_sprites[0])->_texture.id, 0, color);
+			if (cam->canBeSeen(*m_sprites[0]->_pos, m_sprites[0]->_texture.width, m_sprites[0]->_texture.height)) {
+				draw(pos, uv, (m_sprites[0])->_texture.id, 0, color);
 			}
-			for (size_t i = 1; i < _sprites.size(); i++) {
+			for (size_t i = 1; i < m_sprites.size(); i++) {
 
-				if (cam->canBeSeen(*_sprites[i]->_pos, aliveDims)) {
-					if (_sprites[i]->_shaderID != _currentShaderID) {
-						_currentShaderID = _sprites[i]->_shaderID;
+				// used for occlusion
+				if (cam->canBeSeen(*m_sprites[i]->_pos, m_sprites[i]->_texture.width, m_sprites[i]->_texture.height)) {
+					if (m_sprites[i]->_shaderID != _currentShaderID) {
+						_currentShaderID = m_sprites[i]->_shaderID;
 					}
 
-					pos.x = _sprites[i]->_pos->x;
-					pos.y = _sprites[i]->_pos->y;
-					pos.z = _sprites[i]->_uv.x;
-					pos.w = _sprites[i]->_uv.y;
-					uv.x = _sprites[i]->_uv.x;
-					uv.y = _sprites[i]->_uv.y;
-					draw(pos, uv, _sprites[i]->_texture.id, _layerNum, color);
+					pos.x = m_sprites[i]->_pos->x - 
+						m_sprites[i]->_texture.width / 2;									   
+					pos.y = m_sprites[i]->_pos->y -
+							m_sprites[i]->_texture.height / 2;
+					pos.z = m_sprites[i]->_uv.x;
+					pos.w = m_sprites[i]->_uv.y;
+					uv.x = m_sprites[i]->_uv.x;
+					uv.y = m_sprites[i]->_uv.y;
+					draw(pos, uv, m_sprites[i]->_texture.id, (float) m_layerNum, color);
 				}
 			}
 
@@ -121,11 +130,11 @@ namespace SimE {
 
 	void SpriteBatch::renderBatch() {
 
-		glBindVertexArray(_vao);
+		glBindVertexArray(m_vao);
 
-		for (size_t i = 0; i < _renderBatches.size(); i++) {
-			glBindTexture(GL_TEXTURE_2D, _renderBatches[i].texture);
-			glDrawArrays(GL_TRIANGLES, _renderBatches[i].offset, _renderBatches[i].numVertices);
+		for (size_t i = 0; i < m_renderBatches.size(); i++) {
+			glBindTexture(GL_TEXTURE_2D, m_renderBatches[i].texture);
+			glDrawArrays(GL_TRIANGLES, m_renderBatches[i].offset, m_renderBatches[i].numVertices);
 		}
 
 		glBindVertexArray(0);
@@ -135,44 +144,44 @@ namespace SimE {
 
 	void SpriteBatch::createRenderBatches() {
 		std::vector<Vertex> vertices;
-		vertices.resize(_glyphs.size() * 6); // each rectangular glyph has 6 vertices
+		vertices.resize(m_glyphPointers.size() * 6); // each rectangular glyph has 6 vertices
 
-		if (_glyphs.empty()) {
+		if (m_glyphPointers.empty()) {
 			return;
 		}
 
 		int offset = 0;
 		int currentVertex = 0;
 
-		_renderBatches.emplace_back(offset, 6, _glyphs[0]->texture);
-		vertices[currentVertex++] = _glyphs[0]->topLeft;
-		vertices[currentVertex++] = _glyphs[0]->bottomLeft;
-		vertices[currentVertex++] = _glyphs[0]->bottomRight;
-		vertices[currentVertex++] = _glyphs[0]->bottomRight;
-		vertices[currentVertex++] = _glyphs[0]->topRight;
-		vertices[currentVertex++] = _glyphs[0]->topLeft;
+		m_renderBatches.emplace_back(offset, 6, m_glyphPointers[0]->texture);
+		vertices[currentVertex++] = m_glyphPointers[0]->topLeft;
+		vertices[currentVertex++] = m_glyphPointers[0]->bottomLeft;
+		vertices[currentVertex++] = m_glyphPointers[0]->bottomRight;
+		vertices[currentVertex++] = m_glyphPointers[0]->bottomRight;
+		vertices[currentVertex++] = m_glyphPointers[0]->topRight;
+		vertices[currentVertex++] = m_glyphPointers[0]->topLeft;
 		offset += 6;
 
 
-		for (size_t cg = 1; cg < _glyphs.size(); cg++) {
+		for (size_t cg = 1; cg < m_glyphPointers.size(); cg++) {
 
-			if (_glyphs[cg]->texture != _glyphs[cg - 1]->texture) {
+			if (m_glyphPointers[cg]->texture != m_glyphPointers[cg - 1]->texture) {
 
-				_renderBatches.emplace_back(offset, 6, _glyphs[cg]->texture);
+				m_renderBatches.emplace_back(offset, 6, m_glyphPointers[cg]->texture);
 			} else {
 
-				_renderBatches.back().numVertices += 6;
+				m_renderBatches.back().numVertices += 6;
 			}
-			vertices[currentVertex++] = _glyphs[cg]->topLeft;
-			vertices[currentVertex++] = _glyphs[cg]->bottomLeft;
-			vertices[currentVertex++] = _glyphs[cg]->bottomRight;
-			vertices[currentVertex++] = _glyphs[cg]->bottomRight;
-			vertices[currentVertex++] = _glyphs[cg]->topRight;
-			vertices[currentVertex++] = _glyphs[cg]->topLeft;
+			vertices[currentVertex++] = m_glyphPointers[cg]->topLeft;
+			vertices[currentVertex++] = m_glyphPointers[cg]->bottomLeft;
+			vertices[currentVertex++] = m_glyphPointers[cg]->bottomRight;
+			vertices[currentVertex++] = m_glyphPointers[cg]->bottomRight;
+			vertices[currentVertex++] = m_glyphPointers[cg]->topRight;
+			vertices[currentVertex++] = m_glyphPointers[cg]->topLeft;
 			offset += 6;
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
 		// orphan the buffer
 		glBufferData(GL_ARRAY_BUFFER,
@@ -188,15 +197,15 @@ namespace SimE {
 
 	void SpriteBatch::sortGlyphs() {
 
-		switch (_sortType) {
+		switch (m_sortType) {
 		case GlyphSortType::BACK_TO_FRONT:
-			std::stable_sort(_glyphs.begin(), _glyphs.end(), compareBackToFront);
+			std::stable_sort(m_glyphPointers.begin(), m_glyphPointers.end(), compareBackToFront);
 			break;
 		case GlyphSortType::FRONT_TO_BACK:
-			std::stable_sort(_glyphs.begin(), _glyphs.end(), compareFrontToBack);
+			std::stable_sort(m_glyphPointers.begin(), m_glyphPointers.end(), compareFrontToBack);
 			break;
 		case GlyphSortType::TEXTURE:
-			std::stable_sort(_glyphs.begin(), _glyphs.end(), compareTexture);
+			std::stable_sort(m_glyphPointers.begin(), m_glyphPointers.end(), compareTexture);
 			break;
 		}
 	}
@@ -214,15 +223,15 @@ namespace SimE {
 	}
 
 	void SpriteBatch::addSprite(Sprite * sprite) {
-		_sprites.emplace_back(sprite);
+		m_sprites.emplace_back(sprite);
 	}
 
 	void SpriteBatch::removeSprite(Sprite * sprite) {
 
 		size_t i = 0;
-		while (i < _sprites.size() && _sprites[i++] != sprite) {}
-		if (i <= _sprites.size()) {
-			_sprites.erase(_sprites.begin() + i - 1);
+		while (i < m_sprites.size() && m_sprites[i++] != sprite) {}
+		if (i <= m_sprites.size()) {
+			m_sprites.erase(m_sprites.begin() + i - 1);
 		}
 	}
 
@@ -231,11 +240,11 @@ namespace SimE {
 
 
 	void SpriteBatch::initShaders() {
-		_colorProgram.compileShaders("shaders/colorShader.vert", "shaders/colorShader.frag");
-		_colorProgram.addAttribute("vertexPosition");
-		_colorProgram.addAttribute("vertexColor");
-		_colorProgram.addAttribute("vertexUV");
-		_colorProgram.linkShaders();
+		m_colorProgram.compileShaders("shaders/colorShader.vert", "shaders/colorShader.frag");
+		m_colorProgram.addAttribute("vertexPosition");
+		m_colorProgram.addAttribute("vertexColor");
+		m_colorProgram.addAttribute("vertexUV");
+		m_colorProgram.linkShaders();
 	}
 
 
@@ -258,5 +267,23 @@ namespace SimE {
 		end();
 		renderBatch();
 
+	}
+	Glyph::Glyph(const glm::vec4 & destRect, const glm::vec4 & uvRect, GLuint Texture, float Depth, const ColorRGBA8 & color) : depth(Depth), texture(Texture)
+	{
+		topLeft.color = color;
+		topLeft.setPosition(destRect.x, destRect.y + destRect.w);
+		topLeft.setUV(uvRect.x, uvRect.y + uvRect.w);
+
+		bottomLeft.color = color;
+		bottomLeft.setPosition(destRect.x, destRect.y);
+		bottomLeft.setUV(uvRect.x, uvRect.y);
+
+		bottomRight.color = color;
+		bottomRight.setPosition(destRect.x + destRect.z, destRect.y);
+		bottomRight.setUV(uvRect.x + uvRect.z, uvRect.y);
+
+		topRight.color = color;
+		topRight.setPosition(destRect.x + destRect.z, destRect.y + destRect.w);
+		topRight.setUV(uvRect.x + uvRect.z, uvRect.y + uvRect.w);
 	}
 }

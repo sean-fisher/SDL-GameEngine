@@ -9,22 +9,22 @@ namespace SimE {
 	class Sprite {
 	public:
 		Sprite();
-		Sprite(glm::vec2* pos, glm::vec2 uv, std::string filepath, float depth, Color color);
+		Sprite(glm::vec2* pos, glm::vec2 uv, std::string filepath, float depth, ColorRGBA8 color);
 		Sprite(glm::vec2* pos, 
 			GLTexture texture,
 			float depth,
-			Color color);
+			ColorRGBA8 color);
 		Sprite(glm::vec2 pos,
 			glm::vec2 uv,
 			GLTexture texture,
 			float depth,
-			Color color);
+			ColorRGBA8 color);
 		//Sprite(glm::vec2* pos, glm::vec2 uv, std::string filepath, float depth, Color color, glm::vec2 scale);
 		~Sprite();
 
-		bool Sprite::operator==(const Sprite &other) const {
+		/*bool Sprite::operator==(const Sprite &other) const {
 			return _texture.id == other._texture.id && _pos == other._pos;
-		}
+		}*/
 
 		void init(float x, float y, float width, float height, std::string texturePath);
 		void draw(glm::vec2* pos);
@@ -34,7 +34,7 @@ namespace SimE {
 		glm::vec2 _uv;
 		GLTexture _texture;
 		float _depth;
-		Color _color;
+		ColorRGBA8 _color;
 	private:
 		float _x;
 		float _y;

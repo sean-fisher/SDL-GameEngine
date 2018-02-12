@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "SpriteLayers.h"
-#include "Time.h"
+#include "Timer.h"
 #include <iostream>
 #include "GLTexture.h"
 #include "SDLerrors.h"
@@ -31,11 +31,11 @@ namespace SimE {
 
 		GLuint timeLoc = _colorProgram.getUniformLocation("time");
 		// send variable to shader
-		glUniform1f(timeLoc, Time::getTime());
+		glUniform1f(timeLoc, Timer::getTime());
 	}
 
-	void SpriteLayers::drawAll(Camera2D* cam) {
-
+	void SpriteLayers::drawAll(Camera2D* cam, Window* window) {
+		//SDL_PollEvent(&_event);
 		// Set the ortho camera matrix
 		GLuint projLoc = _colorProgram.getUniformLocation("orthoProj");
 		glm::mat4 camMatrix = cam->getCameraMatrix();
@@ -43,6 +43,7 @@ namespace SimE {
 
 		// draw every layer
 		//_groundLayer.beginDrawing();
+		SDL_RenderClear(window->getRenderer());
 
 
 		for (size_t i = 0; i < _layers->size(); i++) {
@@ -51,21 +52,20 @@ namespace SimE {
 			batch->drawAll(cam);
 			batch->endDrawing();
 		}
+
+		drawUI();
 		/*
-		_groundLayer.drawAll(cam);
-		_groundLayer.endDrawing();
-		_character1layer.drawAll(cam);
-		_character1layer.endDrawing();
-		_character2layer.drawAll(cam);
-		_character2layer.endDrawing();
-		_character2layer.drawAll(cam);
-		_character2layer.endDrawing();
-		*/
-		//_currentMap. TODO draw map
+		SDL_SetRenderDrawColor(window->getRenderer(), 255, 255, 255, 0);
+		for (int i = 0; i < 50; i++) {
+			for (int j = 0; j < 50; j++) {
+				SDL_RenderDrawPoint(window->getRenderer(), 200+i, 200+j);
+			}
+		}
+		SDL_SetRenderTarget(window->getRenderer(), NULL);*/
+		//SDL_RenderPresent(window->getRenderer());
 	}
 
-	void SpriteLayers::endDrawing() {
-
+	void SpriteLayers::endDrawing(Window* window) {
 		// unbind the shader
 		glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -75,7 +75,9 @@ namespace SimE {
 	}
 	void SpriteLayers::init(int numLayers) {
 		createVertexArray();
+		m_spriteFont = new SimE::SpriteFont("Assets/Fonts/ff6_font.ttf", 32);
 		_colorProgram.initShaders();
+
 
 		_layers = new std::vector<SpriteBatch*>(numLayers);
 
@@ -109,7 +111,7 @@ namespace SimE {
 					printf("tex width: %d", tex.width);
 					glm::vec2* tilePos = new glm::vec2(col * gridSquareSize, row * gridSquareSize);
 					glm::vec2* uv = new glm::vec2(tex.width, tex.height);
-					Sprite* tile = new Sprite(tilePos, tex, 0/*depth*/, Color(255, 255, 255, 255));
+					Sprite* tile = new Sprite(tilePos, tex, 0/*depth*/, ColorRGBA8(255, 255, 255, 255));
 					addToLayer(layerNum, tile); /*TODO: MAKE work with all layers*/
 				} else if (id == -2) {
 					row--;
@@ -178,4 +180,15 @@ namespace SimE {
 		glBindVertexArray(0);
 	}
 
+	void SpriteLayers::drawUI() {
+		m_uiSpriteBatch.begin();
+
+		char message[256];
+		sprintf_s(message, "FPS: %d", FPSLimiter::getFPS());
+
+		m_spriteFont->draw(m_uiSpriteBatch, message, glm::vec2(0, 0), glm::vec2(4), 0, ColorRGBA8(255, 255, 255, 255));
+
+		m_uiSpriteBatch.end();
+		m_uiSpriteBatch.renderBatch();
+	}
 }

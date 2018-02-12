@@ -42,8 +42,11 @@ namespace SimE {
 
 		GLenum error = glewInit();
 		if (error != GLEW_OK) {
-			fatalError("COuld not initialize GLEW");
+			fatalError("Could not initialize GLEW");
 		}
+
+		// create a renderer for drawing without sprites
+		_renderer = SDL_CreateRenderer(_sdlWindow, -1, 0);
 
 		printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
 

@@ -43,7 +43,7 @@ namespace SimE {
 
 
 		IOManager::readTilemapLayer(filepath, *in);
-		_layers.push_back(in);
+		m_layers.push_back(in);
 		/*} else {
 		// TODO
 		}*/
@@ -75,12 +75,12 @@ namespace SimE {
 			std::vector<int>* in = new std::vector<int>();
 
 			IOManager::readTilemapLayer(directory + relevantFilenames[i], *in);
-			_layers.push_back(in);
+			m_layers.push_back(in);
 		}
 	}
 	void TileMap::clearMap() {
-		for (size_t i = 0; i < _layers.size(); i++) {
-			delete _layers[i];
+		for (size_t i = 0; i < m_layers.size(); i++) {
+			delete m_layers[i];
 		}
 	}
 	void TileMap::addLayer(std::string filepath) {
@@ -91,6 +91,6 @@ namespace SimE {
 
 
 		IOManager::readTilemapLayer(filepath, *in);
-		_layers.push_back(in);
+		m_layers.push_back(in);
 	}
 }

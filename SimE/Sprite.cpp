@@ -9,7 +9,7 @@ namespace SimE {
 		_vboID = 0;
 	}
 
-	Sprite::Sprite(glm::vec2* pos, glm::vec2 uv, std::string filepath , float depth, Color color) {
+	Sprite::Sprite(glm::vec2* pos, glm::vec2 uv, std::string filepath , float depth, ColorRGBA8 color) {
 
 		_pos = pos;
 
@@ -40,7 +40,7 @@ namespace SimE {
 		_uv.y = (float)_texture.height * scale.y;
 	}*/
 
-	Sprite::Sprite(glm::vec2* pos, GLTexture texture, float depth, Color color) {
+	Sprite::Sprite(glm::vec2* pos, GLTexture texture, float depth, ColorRGBA8 color) {
 		_pos = pos;
 		_uv.x = (float) texture.width;
 		_uv.y = (float) texture.height;
@@ -49,7 +49,7 @@ namespace SimE {
 		_color = color;
 	}
 
-	Sprite::Sprite(glm::vec2 pos, glm::vec2 uv, GLTexture texture, float depth, Color color) {
+	Sprite::Sprite(glm::vec2 pos, glm::vec2 uv, GLTexture texture, float depth, ColorRGBA8 color) {
 		_pos = &pos;
 		_uv = uv;
 		_texture = texture;

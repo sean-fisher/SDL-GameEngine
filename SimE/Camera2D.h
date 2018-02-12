@@ -12,7 +12,7 @@ namespace SimE {
 		void update(); // updates camera matrix if needed
 		void init(int screenWidth, int screenHeight);
 
-		bool canBeSeen(const glm::vec2& position, const glm::vec2 dimensions);
+		bool canBeSeen(const glm::vec2& position, const int width, const int height);
 
 		void setPosition(glm::vec2& newPosition) {
 			_position = newPosition;

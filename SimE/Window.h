@@ -18,10 +18,12 @@ namespace SimE {
 
 		void swapBuffer();
 
-		int getScreenWidth() { return _screenWidth; };
-		int getScreenHeight() { return _screenHeight; };
+		int getScreenWidth() { return _screenWidth; }
+		int getScreenHeight() { return _screenHeight; }
+		SDL_Renderer* getRenderer() { return _renderer; }
 	private:
 		SDL_Window* _sdlWindow;
+		SDL_Renderer* _renderer;
 		int _screenWidth;
 		int _screenHeight;
 	};

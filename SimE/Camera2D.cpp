@@ -33,14 +33,14 @@ namespace SimE {
 		_orthoMatrix = glm::ortho(0.0f, (float)_screenWidth, 0.0f, (float)_screenHeight);
 
 	}
-	bool Camera2D::canBeSeen(const glm::vec2 & position, const glm::vec2 dimensions) {
+	bool Camera2D::canBeSeen(const glm::vec2 & position, const int width, const int height) {
 
 		glm::vec2 scaledScreen = glm::vec2(_screenWidth, _screenHeight) / (_scale);
 
-		const float min_distance_x = (dimensions.x + scaledScreen.x) / 2.0f;
-		const float min_distance_y = (dimensions.y + scaledScreen.y) / 2.0f;
+		const float min_distance_x = (width + scaledScreen.x) / 1.0f;
+		const float min_distance_y = (height + scaledScreen.y) / 1.0f;
 
-		glm::vec2 centerPos = position + dimensions / 2.0f;
+		glm::vec2 centerPos = position + glm::vec2(width, height) / 2.0f;
 		glm::vec2 centerCamPos = _position;
 		glm::vec2 distVec = centerPos- centerCamPos;
 

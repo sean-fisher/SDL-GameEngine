@@ -5,6 +5,7 @@
 #include "Sprite.h"
 #include "Alive.h"
 #include "Structs.h"
+#include "Camera2D.h"
 
 namespace SimE {
 	class Being : public Alive {
@@ -19,27 +20,28 @@ namespace SimE {
 		void checkInput();
 
 		bool beat() override;
+		void onCollide(Alive* other) override;
 
 		// Getters
-		float getWalkSpeed() { return _walkSpeed; }
-		float getRunSpeed() { return _walkSpeed; }
-		std::string getName() { return _name; }
+		float getWalkSpeed() { return m_walkSpeed; }
+		float getRunSpeed() { return m_walkSpeed; }
+		std::string getName() { return m_name; }
 
-		glm::vec2 _position;
-		glm::vec2 _lastPosition;
-		glm::vec2 _scale;
+		glm::vec2 m_scale;
 
-		Sprite* _sprite;
+		Sprite* m_sprite;
 
-		Collider* _collider;
+		Collider* m_collider;
 
-		bool _canMove;
-		bool _canControl;
+		bool m_canMove;
+		bool m_canControl;
+
+		Camera2D* cam;
 
 	private:
-		std::string _name;
-		float _walkSpeed;
-		float _runSpeed;
+		std::string m_name;
+		float m_walkSpeed;
+		float m_runSpeed;
 		bool isRunning;
 	};
 
